@@ -8,17 +8,8 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import org.fossify.messages.helpers.Converters
-import org.fossify.messages.interfaces.AttachmentsDao
-import org.fossify.messages.interfaces.ConversationsDao
-import org.fossify.messages.interfaces.DraftsDao
-import org.fossify.messages.interfaces.MessageAttachmentsDao
-import org.fossify.messages.interfaces.MessagesDao
-import org.fossify.messages.models.Attachment
-import org.fossify.messages.models.Conversation
-import org.fossify.messages.models.Draft
-import org.fossify.messages.models.Message
-import org.fossify.messages.models.MessageAttachment
-import org.fossify.messages.models.RecycleBinMessage
+import org.fossify.messages.interfaces.*
+import org.fossify.messages.models.*
 
 @Database(
     entities = [
@@ -27,9 +18,11 @@ import org.fossify.messages.models.RecycleBinMessage
         MessageAttachment::class,
         Message::class,
         RecycleBinMessage::class,
-        Draft::class
+        Draft::class,
+        NotificationCategory::class,
+        NotificationRule::class
     ],
-    version = 9
+    version = 10
 )
 @TypeConverters(Converters::class)
 abstract class MessagesDatabase : RoomDatabase() {
@@ -43,6 +36,10 @@ abstract class MessagesDatabase : RoomDatabase() {
     abstract fun MessagesDao(): MessagesDao
 
     abstract fun DraftsDao(): DraftsDao
+
+    abstract fun NotificationCategoryDao(): NotificationCategoryDao
+
+    abstract fun NotificationRuleDao(): NotificationRuleDao
 
     companion object {
         private var db: MessagesDatabase? = null
@@ -65,6 +62,7 @@ abstract class MessagesDatabase : RoomDatabase() {
                             .addMigrations(MIGRATION_6_7)
                             .addMigrations(MIGRATION_7_8)
                             .addMigrations(MIGRATION_8_9)
+                            .addMigrations(MIGRATION_9_10)
                             .build()
                     }
                 }
@@ -151,6 +149,20 @@ abstract class MessagesDatabase : RoomDatabase() {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.apply {
                     execSQL("CREATE TABLE IF NOT EXISTS `drafts` (`thread_id` INTEGER NOT NULL PRIMARY KEY, `body` TEXT NOT NULL, `date` INTEGER NOT NULL)")
+                }
+            }
+        }
+
+        private val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.apply {
+                    // Create notification_categories table
+                    execSQL("CREATE TABLE IF NOT EXISTS `notification_categories` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `channelId` TEXT NOT NULL, `description` TEXT)")
+                    execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_notification_categories_channelId` ON `notification_categories` (`channelId`)")
+
+                    // Create notification_rules table
+                    execSQL("CREATE TABLE IF NOT EXISTS `notification_rules` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `ruleType` TEXT NOT NULL, `valueToMatch` TEXT NOT NULL, `categoryId` INTEGER NOT NULL, `order` INTEGER NOT NULL, `isEnabled` INTEGER NOT NULL DEFAULT 1, FOREIGN KEY(`categoryId`) REFERENCES `notification_categories`(`id`) ON DELETE CASCADE)")
+                    execSQL("CREATE INDEX IF NOT EXISTS `index_notification_rules_categoryId` ON `notification_rules` (`categoryId`)")
                 }
             }
         }

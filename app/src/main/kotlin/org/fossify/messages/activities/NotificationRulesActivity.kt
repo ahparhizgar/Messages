@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.tooling.preview.Preview
 
 class NotificationRulesActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,4 +20,10 @@ class NotificationRulesActivity : ComponentActivity() {
 fun NotificationRulesScreen() {
     // TODO: Implement the UI for managing notification rules and categories
     Text("Notification Rules and Categories will be here!")
+}
+
+@Preview
+@Composable
+private fun NotificationRulesPreview() {
+    NotificationRulesScreen()
 }

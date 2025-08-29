@@ -8,6 +8,7 @@ import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,6 +20,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -81,26 +84,96 @@ fun NotificationRulesScreen(viewModel: NotificationRulesViewModel) {
 
 @Composable
 fun RulesTabContent(viewModel: NotificationRulesViewModel) {
-    var regexInput by remember { mutableStateOf("") }
-    // Assuming categoryId 1L for now, this should be selectable or managed elsewhere
-    val categoryId = 1L
+    val ruleTypes = listOf(
+        "Exact Phone Number" to org.fossify.messages.models.NotificationRuleType.PHONE_NUMBER_EXACT,
+        "Phone Number Regex" to org.fossify.messages.models.NotificationRuleType.PHONE_NUMBER_REGEX,
+        "Message Contains" to org.fossify.messages.models.NotificationRuleType.MESSAGE_CONTAINS,
+        "Message Regex" to org.fossify.messages.models.NotificationRuleType.MESSAGE_REGEX
+    )
+    val categories by viewModel.categories.collectAsState(initial = emptyList())
     val rules by viewModel.rules.collectAsState(initial = emptyList())
 
+    var selectedRuleTypeIndex by remember { mutableStateOf(0) }
+    var selectedCategoryIndex by remember { mutableStateOf(0) }
+    var valueInput by remember { mutableStateOf("") }
+
     Column(modifier = Modifier.padding(16.dp)) {
-        Text("Add New Phone Number Regex Rule")
+        Text("Add New Notification Rule")
+
+        // Rule type dropdown
+        var isRuleTypeExpanded by remember { mutableStateOf(false) }
+        Row(
+            modifier = Modifier
+            .clickable { isRuleTypeExpanded = true }, verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "Rule Type:", modifier = Modifier
+                    .padding(end = 8.dp)
+            )
+            DropdownMenu(
+                expanded = isRuleTypeExpanded,
+                onDismissRequest = { isRuleTypeExpanded = false },
+                modifier = Modifier
+                    .width(200.dp)
+            ) {
+                ruleTypes.forEachIndexed { index, (label, _) ->
+                    DropdownMenuItem(
+                        text = { Text(label) },
+                        onClick = {
+                            selectedRuleTypeIndex = index
+                            isRuleTypeExpanded = false
+                        }
+                    )
+                }
+            }
+            Text(ruleTypes[selectedRuleTypeIndex].first, modifier = Modifier.padding(start = 8.dp))
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Category dropdown
+        var isCategoriesExpanded by remember { mutableStateOf(false) }
+        Row(modifier = Modifier.clickable { isCategoriesExpanded = true }, verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                "Category:", modifier = Modifier
+                    .padding(end = 8.dp)
+            )
+            DropdownMenu(
+                expanded = isCategoriesExpanded,
+                onDismissRequest = { isCategoriesExpanded = false },
+                modifier = Modifier
+                    .width(200.dp)
+            ) {
+                categories.forEachIndexed { index, category ->
+                    DropdownMenuItem(
+                        text = { Text(category.name) },
+                        onClick = {
+                            selectedCategoryIndex = index
+                            isCategoriesExpanded = false
+                        }
+                    )
+                }
+            }
+            if (categories.isNotEmpty()) {
+                Text(categories[selectedCategoryIndex].name, modifier = Modifier.padding(start = 8.dp))
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
-            value = regexInput,
-            onValueChange = { regexInput = it },
-            label = { Text("Enter Regex") }
+            value = valueInput,
+            onValueChange = { valueInput = it },
+            label = { Text("Value to Match (Phone/Regex/Text)") }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(onClick = {
-            if (regexInput.isNotBlank()) {
-                viewModel.addPhoneNumberRegexRule(regexInput, categoryId)
-                regexInput = "" // Clear input field
+            if (valueInput.isNotBlank() && categories.isNotEmpty()) {
+                val ruleType = ruleTypes[selectedRuleTypeIndex].second
+                val categoryId = categories[selectedCategoryIndex].id
+                viewModel.addNotificationRule(ruleType, valueInput, categoryId)
+                valueInput = ""
             }
         }) {
             Text("Add Rule")
@@ -191,7 +264,7 @@ fun ChannelsTabContent(viewModel: NotificationRulesViewModel) {
 @Preview(showBackground = true)
 @Composable
 private fun NotificationRulesScreenPreview() {
-    val application = Application() 
+    val application = Application()
     val factory = NotificationRulesViewModelFactory(application)
     val fakeViewModel = factory.create(NotificationRulesViewModel::class.java)
     NotificationRulesScreen(fakeViewModel)

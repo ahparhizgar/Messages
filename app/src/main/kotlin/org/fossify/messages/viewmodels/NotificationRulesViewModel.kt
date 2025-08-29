@@ -50,6 +50,20 @@ class NotificationRulesViewModel(
         }
     }
 
+    fun addNotificationRule(ruleType: NotificationRuleType, valueToMatch: String, categoryId: Long) {
+        viewModelScope.launch {
+            val newOrder = rules.value.size // Consider a more robust ordering mechanism
+            val newRule = NotificationRule(
+                ruleType = ruleType,
+                valueToMatch = valueToMatch,
+                categoryId = categoryId,
+                order = newOrder,
+                isEnabled = true
+            )
+            notificationRuleDao.insert(newRule)
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.O) // NotificationChannel requires API 26
     fun addNotificationCategory(channelName: String, channelDescription: String?, context: Context) {
         viewModelScope.launch {

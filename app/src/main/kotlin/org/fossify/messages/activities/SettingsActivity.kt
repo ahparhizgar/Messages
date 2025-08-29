@@ -186,7 +186,9 @@ class SettingsActivity : SimpleActivity() {
 
     private fun setupCustomizeNotifications() = binding.apply {
         settingsCustomizeNotificationsHolder.setOnClickListener {
-            launchCustomizeNotificationsIntent()
+            Intent(this@SettingsActivity, NotificationRulesActivity::class.java).apply {
+                startActivity(this)
+            }
         }
     }
 

@@ -68,6 +68,12 @@
             android:parentActivityName=".activities.MainActivity"
             android:windowSoftInputMode="adjustResize" />
 
+        <activity android:name=".activities.NotificationRulesActivity"
+            android:configChanges="orientation"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:parentActivityName=".activities.MainActivity" />
+
         <activity
             android:name=".activities.NewConversationActivity"
             android:configChanges="orientation"

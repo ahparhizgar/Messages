@@ -32,17 +32,17 @@ data class NotificationRule(
     val categoryId: Long,
     val order: Int,
     val isEnabled: Boolean = true
-) {
-    fun matches(message: MessageData): Boolean {
-        if (!isEnabled) {
-            return false
-        }
-        val matcher: RuleMatcher = when (ruleType) {
-            NotificationRuleType.PHONE_NUMBER_EXACT -> PhoneNumberExactMatcher(valueToMatch)
-            NotificationRuleType.PHONE_NUMBER_REGEX -> PhoneNumberRegexMatcher(valueToMatch)
-            NotificationRuleType.MESSAGE_CONTAINS -> MessageContainsMatcher(valueToMatch)
-            NotificationRuleType.MESSAGE_REGEX -> MessageRegexMatcher(valueToMatch)
-        }
-        return matcher.matches(message)
+)
+
+fun NotificationRule.matches(message: MessageData): Boolean {
+    if (!isEnabled) {
+        return false
     }
+    val matcher: RuleMatcher = when (ruleType) {
+        NotificationRuleType.PHONE_NUMBER_EXACT -> PhoneNumberExactMatcher(valueToMatch)
+        NotificationRuleType.PHONE_NUMBER_REGEX -> PhoneNumberRegexMatcher(valueToMatch)
+        NotificationRuleType.MESSAGE_CONTAINS -> MessageContainsMatcher(valueToMatch)
+        NotificationRuleType.MESSAGE_REGEX -> MessageRegexMatcher(valueToMatch)
+    }
+    return matcher.matches(message)
 }

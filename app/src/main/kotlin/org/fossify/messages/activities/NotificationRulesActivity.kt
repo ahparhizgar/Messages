@@ -1,14 +1,22 @@
 package org.fossify.messages.activities
 
+import android.app.Application // For preview
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Tab
@@ -20,7 +28,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.fossify.messages.viewmodels.NotificationRulesViewModel
@@ -100,31 +110,92 @@ fun RulesTabContent(viewModel: NotificationRulesViewModel) {
 
 @Composable
 fun ChannelsTabContent(viewModel: NotificationRulesViewModel) {
-    // Placeholder for Channels content
+    var channelNameInput by remember { mutableStateOf("") }
+    val categories by viewModel.categories.collectAsState()
+    val context = LocalContext.current
+
     Column(modifier = Modifier.padding(16.dp)) {
-        Text("Channels Management (Coming Soon)")
+        Text("Add New Notification Channel")
+
+        OutlinedTextField(
+            value = channelNameInput,
+            onValueChange = { channelNameInput = it },
+            label = { Text("Enter Channel Name") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = {
+                if (channelNameInput.isNotBlank()) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        viewModel.addNotificationCategory(channelNameInput, null, context)
+                        channelNameInput = "" // Clear input field
+                    } else {
+                        // Handle cases for older Android versions if necessary
+                        // (though minSdk is 26, this branch might not be strictly needed for channel creation)
+                    }
+                }
+            },
+            modifier = Modifier.align(Alignment.End)
+        ) {
+            Text("Add Channel")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("Registered Channels (Count: ${categories.size})")
+        LazyColumn {
+            items(categories) { category ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = category.name, modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(onClick = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            val intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS).apply {
+                                putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+                                putExtra(Settings.EXTRA_CHANNEL_ID, category.channelId)
+                            }
+                            context.startActivity(intent)
+                        }
+                    }) {
+                        Text("Settings")
+                    }
+                }
+            }
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun NotificationRulesScreenPreview() {
-    // This preview won't have a real ViewModel, so state will be empty.
-    // You might need a more sophisticated preview setup for complex ViewModel interactions.
-    val fakeViewModel = NotificationRulesViewModel(null!!) // Or a mock/fake implementation
+    val application = Application() 
+    val factory = NotificationRulesViewModelFactory(application)
+    val fakeViewModel = factory.create(NotificationRulesViewModel::class.java)
     NotificationRulesScreen(fakeViewModel)
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun RulesTabContentPreview() {
-    val fakeViewModel = NotificationRulesViewModel(null!!)
+    val application = Application()
+    val factory = NotificationRulesViewModelFactory(application)
+    val fakeViewModel = factory.create(NotificationRulesViewModel::class.java)
     RulesTabContent(fakeViewModel)
 }
 
 @Preview(showBackground = true)
 @Composable
 private fun ChannelsTabContentPreview() {
-     val fakeViewModel = NotificationRulesViewModel(null!!)
+    val application = Application()
+    val factory = NotificationRulesViewModelFactory(application)
+    val fakeViewModel = factory.create(NotificationRulesViewModel::class.java)
     ChannelsTabContent(fakeViewModel)
 }

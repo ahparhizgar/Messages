@@ -76,4 +76,14 @@ class NotificationRulesViewModel(
             notificationCategoryDao.insert(newCategory)
         }
     }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    fun deleteNotificationCategory(category: NotificationCategory, context: Context) {
+        viewModelScope.launch {
+            val notificationManager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.deleteNotificationChannel(category.channelId)
+            notificationCategoryDao.delete(category)
+        }
+    }
 }

@@ -18,7 +18,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -45,7 +47,9 @@ class NotificationRulesActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            NotificationRulesScreen(viewModel)
+            Surface {
+                NotificationRulesScreen(viewModel)
+            }
         }
     }
 }
@@ -166,6 +170,14 @@ fun ChannelsTabContent(viewModel: NotificationRulesViewModel) {
                         }
                     }) {
                         Text("Settings")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(onClick = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            viewModel.deleteNotificationCategory(category, context)
+                        }
+                    }) {
+                        Text("Delete")
                     }
                 }
             }

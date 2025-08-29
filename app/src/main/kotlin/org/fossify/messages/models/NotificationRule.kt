@@ -4,6 +4,16 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import org.fossify.messages.services.MessageContainsMatcher
+import org.fossify.messages.services.MessageRegexMatcher
+import org.fossify.messages.services.PhoneNumberExactMatcher
+import org.fossify.messages.services.PhoneNumberRegexMatcher
+import org.fossify.messages.services.RuleMatcher
+
+data class MessageData(
+    val sender: String,
+    val messageBody: String, // Add other relevant fields like SIM slot, etc. if needed
+)
 
 @Entity(
     tableName = "notification_rules",
@@ -22,4 +32,17 @@ data class NotificationRule(
     val categoryId: Long,
     val order: Int,
     val isEnabled: Boolean = true
-)
+) {
+    fun matches(message: MessageData): Boolean {
+        if (!isEnabled) {
+            return false
+        }
+        val matcher: RuleMatcher = when (ruleType) {
+            NotificationRuleType.PHONE_NUMBER_EXACT -> PhoneNumberExactMatcher(valueToMatch)
+            NotificationRuleType.PHONE_NUMBER_REGEX -> PhoneNumberRegexMatcher(valueToMatch)
+            NotificationRuleType.MESSAGE_CONTAINS -> MessageContainsMatcher(valueToMatch)
+            NotificationRuleType.MESSAGE_REGEX -> MessageRegexMatcher(valueToMatch)
+        }
+        return matcher.matches(message)
+    }
+}

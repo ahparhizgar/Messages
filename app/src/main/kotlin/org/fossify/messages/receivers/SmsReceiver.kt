@@ -6,6 +6,10 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.provider.Telephony
+import android.util.Log
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.runBlocking
 import org.fossify.commons.extensions.baseConfig
 import org.fossify.commons.extensions.getMyContactsCursor
 import org.fossify.commons.extensions.isNumberBlocked
@@ -17,6 +21,9 @@ import org.fossify.messages.extensions.*
 import org.fossify.messages.helpers.ReceiverUtils.isMessageFilteredOut
 import org.fossify.messages.helpers.refreshMessages
 import org.fossify.messages.models.Message
+import org.fossify.messages.models.MessageData
+import org.fossify.messages.services.NotificationMatcher
+import org.fossify.messages.models.NotificationRule
 
 class SmsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -112,7 +119,29 @@ class SmsReceiver : BroadcastReceiver() {
                         context.updateConversationArchivedStatus(threadId, false)
                     }
                     refreshMessages()
-                    context.showReceivedMessageNotification(newMessageId, address, body, threadId, bitmap)
+
+                    val messageData = MessageData(sender = address, messageBody = body)
+                    Log.d("messageData", messageData.toString())
+                    val rules: List<NotificationRule> = runBlocking {
+                        context.notificationRuleDao.getAllRules().first()
+                    }
+                    val matcher = NotificationMatcher()
+                    val matchedRule = matcher.findMatchingRule(messageData, rules)
+                    var channelId: String? = null
+                    if (matchedRule != null) {
+                        val category = runBlocking {
+                            context.notificationCategoryDao.getCategoryById(matchedRule.categoryId)
+                        }
+                        channelId = category?.channelId
+                    }
+                    context.showReceivedMessageNotification(
+                        messageId = newMessageId,
+                        address = address,
+                        body = body,
+                        threadId = threadId,
+                        bitmap = bitmap,
+                        channelId = channelId
+                    )
                 }
             }
         }

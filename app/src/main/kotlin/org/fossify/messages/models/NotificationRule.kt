@@ -12,7 +12,7 @@ import org.fossify.messages.services.RuleMatcher
 
 data class MessageData(
     val sender: String,
-    val messageBody: String, // Add other relevant fields like SIM slot, etc. if needed
+    val messageBody: String,
 )
 
 @Entity(

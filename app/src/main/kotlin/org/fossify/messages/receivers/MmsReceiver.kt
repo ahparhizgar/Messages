@@ -81,7 +81,8 @@ class MmsReceiver : MmsReceivedReceiver() {
                 address = address,
                 body = mms.body,
                 threadId = mms.threadId,
-                bitmap = glideBitmap
+                bitmap = glideBitmap,
+                channelId = null
             )
 
             ensureBackgroundThread {

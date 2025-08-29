@@ -54,7 +54,7 @@ class DirectReplyReceiver : BroadcastReceiver() {
                 val photoUri = SimpleContactsHelper(context).getPhotoUriFromPhoneNumber(address)
                 val bitmap = context.getNotificationBitmap(photoUri)
                 Handler(Looper.getMainLooper()).post {
-                    context.notificationHelper.showMessageNotification(messageId, address, body, threadId, bitmap, sender = null, alertOnlyOnce = true)
+                    context.notificationHelper.showMessageNotification(messageId, address, body, threadId, bitmap, sender = null, alertOnlyOnce = true, null)
                 }
 
                 context.markThreadMessagesRead(threadId)

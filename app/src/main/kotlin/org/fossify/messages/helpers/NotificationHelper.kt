@@ -11,6 +11,7 @@ import android.graphics.Bitmap
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.RingtoneManager
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
@@ -43,12 +44,13 @@ class NotificationHelper(private val context: Context) {
         threadId: Long,
         bitmap: Bitmap?,
         sender: String?,
-        alertOnlyOnce: Boolean = false
+        alertOnlyOnce: Boolean = false,
+        channelId: String?
     ) {
         val hasCustomNotifications =
-            context.config.customNotifications.contains(threadId.toString())
-        val notificationChannelId =
-            if (hasCustomNotifications) threadId.toString() else NOTIFICATION_CHANNEL_ID
+            context.config.customNotifications.contains(threadId.toString()) || channelId != null
+        val notificationChannelId = channelId ?: threadId.toString()
+        Log.d("NotificationHelper", "Using channel ID: $notificationChannelId")
         if (!hasCustomNotifications) {
             createChannel(notificationChannelId, context.getString(R.string.channel_received_sms))
         }

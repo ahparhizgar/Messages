@@ -1036,6 +1036,7 @@ fun Context.showReceivedMessageNotification(
     body: String,
     threadId: Long,
     bitmap: Bitmap?,
+    channelId: String?
 ) {
     val privateCursor = getMyContactsCursor(favoritesOnly = false, withPhoneNumbersOnly = true)
     ensureBackgroundThread {
@@ -1048,7 +1049,8 @@ fun Context.showReceivedMessageNotification(
                 body = body,
                 threadId = threadId,
                 bitmap = bitmap,
-                sender = senderName
+                sender = senderName,
+                channelId = channelId
             )
         }
     }

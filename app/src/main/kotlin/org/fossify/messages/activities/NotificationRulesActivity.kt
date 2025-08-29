@@ -6,10 +6,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -38,9 +41,33 @@ class NotificationRulesActivity : ComponentActivity() {
 }
 
 @Composable
-fun NotificationRulesScreen(viewModel: NotificationRulesViewModel? = null) {
+fun NotificationRulesScreen(viewModel: NotificationRulesViewModel) {
+    var selectedTabIndex by remember { mutableStateOf(0) }
+    val tabs = listOf("Rules", "Channels")
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        TabRow(selectedTabIndex = selectedTabIndex) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = selectedTabIndex == index,
+                    onClick = { selectedTabIndex = index },
+                    text = { Text(title) }
+                )
+            }
+        }
+        when (selectedTabIndex) {
+            0 -> RulesTabContent(viewModel)
+            1 -> ChannelsTabContent(viewModel)
+        }
+    }
+}
+
+@Composable
+fun RulesTabContent(viewModel: NotificationRulesViewModel) {
     var regexInput by remember { mutableStateOf("") }
-    val rules by viewModel?.rules?.collectAsState(initial = emptyList()) ?: remember { mutableStateOf(emptyList()) }
+    // Assuming categoryId 1L for now, this should be selectable or managed elsewhere
+    val categoryId = 1L
+    val rules by viewModel.rules.collectAsState(initial = emptyList())
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Add New Phone Number Regex Rule")
@@ -54,9 +81,8 @@ fun NotificationRulesScreen(viewModel: NotificationRulesViewModel? = null) {
         Spacer(modifier = Modifier.height(8.dp))
 
         Button(onClick = {
-            if (regexInput.isNotBlank() && viewModel != null) {
-                // Using a placeholder categoryId for now
-                viewModel.addPhoneNumberRegexRule(regexInput, 1L) 
+            if (regexInput.isNotBlank()) {
+                viewModel.addPhoneNumberRegexRule(regexInput, categoryId)
                 regexInput = "" // Clear input field
             }
         }) {
@@ -66,15 +92,39 @@ fun NotificationRulesScreen(viewModel: NotificationRulesViewModel? = null) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text("Current Rules (Count: ${rules.size})")
-        // TODO: Display the list of rules here
         rules.forEach {
             Text("ID: ${it.id}, Type: ${it.ruleType}, Value: ${it.valueToMatch}, Category: ${it.categoryId}, Order: ${it.order}")
         }
     }
 }
 
+@Composable
+fun ChannelsTabContent(viewModel: NotificationRulesViewModel) {
+    // Placeholder for Channels content
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text("Channels Management (Coming Soon)")
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
-private fun NotificationRulesPreview() {
-    NotificationRulesScreen()
+private fun NotificationRulesScreenPreview() {
+    // This preview won't have a real ViewModel, so state will be empty.
+    // You might need a more sophisticated preview setup for complex ViewModel interactions.
+    val fakeViewModel = NotificationRulesViewModel(null!!) // Or a mock/fake implementation
+    NotificationRulesScreen(fakeViewModel)
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun RulesTabContentPreview() {
+    val fakeViewModel = NotificationRulesViewModel(null!!)
+    RulesTabContent(fakeViewModel)
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun ChannelsTabContentPreview() {
+     val fakeViewModel = NotificationRulesViewModel(null!!)
+    ChannelsTabContent(fakeViewModel)
 }

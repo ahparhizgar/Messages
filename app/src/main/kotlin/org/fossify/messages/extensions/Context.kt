@@ -65,6 +65,7 @@ import org.fossify.messages.interfaces.ConversationsDao
 import org.fossify.messages.interfaces.DraftsDao
 import org.fossify.messages.interfaces.MessageAttachmentsDao
 import org.fossify.messages.interfaces.MessagesDao
+import org.fossify.messages.interfaces.NotificationCategoryDao
 import org.fossify.messages.interfaces.NotificationRuleDao
 import org.fossify.messages.messaging.MessagingUtils
 import org.fossify.messages.messaging.MessagingUtils.Companion.ADDRESS_SEPARATOR
@@ -101,6 +102,9 @@ val Context.draftsDB: DraftsDao
 
 val Context.notificationRuleDao: NotificationRuleDao
     get() = getMessagesDB().NotificationRuleDao()
+
+val Context.notificationCategoryDao: NotificationCategoryDao
+    get() = getMessagesDB().NotificationCategoryDao()
 
 val Context.notificationHelper
     get() = NotificationHelper(this)

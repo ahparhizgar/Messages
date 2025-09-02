@@ -64,6 +64,12 @@ class NotificationRulesViewModel(
         }
     }
 
+    fun deleteNotificationRule(rule: NotificationRule) {
+        viewModelScope.launch {
+            notificationRuleDao.delete(rule)
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.O) // NotificationChannel requires API 26
     fun addNotificationCategory(channelName: String, channelDescription: String?, context: Context) {
         viewModelScope.launch {

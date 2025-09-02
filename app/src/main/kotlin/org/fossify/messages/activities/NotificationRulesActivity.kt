@@ -182,8 +182,14 @@ fun RulesTabContent(viewModel: NotificationRulesViewModel) {
         Spacer(modifier = Modifier.height(16.dp))
 
         Text("Current Rules (Count: ${rules.size})")
-        rules.forEach {
-            Text("ID: ${it.id}, Type: ${it.ruleType}, Value: ${it.valueToMatch}, Category: ${it.categoryId}, Order: ${it.order}")
+        rules.forEach { rule ->
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("ID: ${rule.id}, Type: ${rule.ruleType}, Value: ${rule.valueToMatch}, Category: ${rule.categoryId}, Order: ${rule.order}", modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(8.dp))
+                Button(onClick = { viewModel.deleteNotificationRule(rule) }) {
+                    Text("Delete")
+                }
+            }
         }
     }
 }

@@ -49,11 +49,14 @@ class NotificationHelper(private val context: Context) {
     ) {
         val hasCustomNotifications =
             context.config.customNotifications.contains(threadId.toString()) || channelId != null
-        val notificationChannelId = channelId ?: threadId.toString()
-        Log.d("NotificationHelper", "Using channel ID: $notificationChannelId")
-        if (!hasCustomNotifications) {
-            createChannel(notificationChannelId, context.getString(R.string.channel_received_sms))
+        val notificationChannelId = if (hasCustomNotifications) {
+            channelId ?: threadId.toString()
+        } else {
+            NOTIFICATION_CHANNEL_ID.also {
+                createChannel(it, context.getString(R.string.channel_received_sms))
+            }
         }
+        Log.d("NotificationHelper", "Using channel ID: $notificationChannelId")
 
         val notificationId = threadId.hashCode()
         val contentIntent = Intent(context, ThreadActivity::class.java).apply {

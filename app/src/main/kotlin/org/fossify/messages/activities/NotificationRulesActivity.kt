@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.viewModels
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,19 +39,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.fossify.messages.viewmodels.NotificationRulesViewModel
-import org.fossify.messages.viewmodels.NotificationRulesViewModelFactory
+import org.koin.androidx.compose.koinViewModel
 
 class NotificationRulesActivity : ComponentActivity() {
-
-    private val viewModel: NotificationRulesViewModel by viewModels {
-        NotificationRulesViewModelFactory(application)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             MaterialTheme {
                 Surface(Modifier.fillMaxSize()) {
+                    // Use Koin to inject ViewModel
+                    val viewModel: NotificationRulesViewModel = koinViewModel()
                     NotificationRulesScreen(viewModel)
                 }
             }

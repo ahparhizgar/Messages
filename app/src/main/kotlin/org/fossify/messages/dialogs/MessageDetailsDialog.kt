@@ -19,8 +19,8 @@ class MessageDetailsDialog(val activity: BaseSimpleActivity, val message: Messag
         val availableSIMs = activity.subscriptionManagerCompat().activeSubscriptionInfoList
 
         addProperty(message.getSenderOrReceiverLabel(), message.getSenderOrReceiverPhoneNumbers())
-        if (availableSIMs.count() > 1) {
-            addProperty(R.string.message_details_sim, message.getSIM(availableSIMs))
+        if ((availableSIMs?.count() ?: 0) > 1) {
+            addProperty(R.string.message_details_sim, message.getSIM(availableSIMs ?: emptyList()))
         }
         addProperty(message.getSentOrReceivedAtLabel(), message.getSentOrReceivedAt())
 

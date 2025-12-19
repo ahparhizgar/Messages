@@ -22,6 +22,9 @@ interface NotificationRuleDao {
     @Update
     suspend fun update(rule: NotificationRule)
 
+    @Update
+    suspend fun updateAll(rules: List<NotificationRule>)
+
     @Delete
     suspend fun delete(rule: NotificationRule)
 

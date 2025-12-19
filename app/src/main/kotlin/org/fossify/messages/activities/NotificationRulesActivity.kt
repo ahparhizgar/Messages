@@ -188,14 +188,14 @@ fun RulesTabContent(viewModel: NotificationRulesViewModel) {
         
         // Create a mutable state list for reordering
         val reorderableRules = remember(rules) { rules.toMutableStateList() }
+        var isDragInProgress by remember { mutableStateOf(false) }
         
         val lazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
         val reorderableLazyListState = rememberReorderableLazyListState(lazyListState) { from, to ->
             reorderableRules.apply {
                 add(to.index, removeAt(from.index))
             }
-            // Update the order in the database when reorder happens
-            viewModel.updateRuleOrders(reorderableRules)
+            isDragInProgress = true
         }
         
         LazyColumn(
@@ -204,24 +204,28 @@ fun RulesTabContent(viewModel: NotificationRulesViewModel) {
         ) {
             items(reorderableRules.size, key = { reorderableRules[it].id }) { index ->
                 val rule = reorderableRules[index]
-                ReorderableItem(reorderableLazyListState, key = rule.id) { isDragging ->
+                ReorderableItem(reorderableLazyListState, key = rule.id) { isDraggingItem ->
+                    // When an item stops being dragged, persist the new order
+                    if (!isDraggingItem && isDragInProgress) {
+                        isDragInProgress = false
+                        viewModel.updateRuleOrders(reorderableRules)
+                    }
+                    
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(vertical = 4.dp)
-                            .longPressDraggableHandle(
-                                onDragStarted = {},
-                                onDragStopped = {}
-                            )
                     ) {
                         Icon(
                             imageVector = Icons.Default.Menu,
                             contentDescription = "Drag handle",
-                            modifier = Modifier.padding(end = 8.dp)
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .longPressDraggableHandle()
                         )
                         Text(
-                            "ID: ${rule.id}, Type: ${rule.ruleType}, Value: ${rule.valueToMatch}, Category: ${rule.categoryId}, Order: ${rule.order}",
+                            "ID: ${rule.id}, Type: ${rule.ruleType}, Value: ${rule.valueToMatch}, Category: ${rule.categoryId}, Position: $index",
                             modifier = Modifier.weight(1f)
                         )
                         Spacer(modifier = Modifier.width(8.dp))

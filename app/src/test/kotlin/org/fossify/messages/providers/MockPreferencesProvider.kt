@@ -1,7 +1,5 @@
 package org.fossify.messages.providers
 
-import org.fossify.messages.models.Conversation
-
 /**
  * Mock implementation of PreferencesProvider for testing.
  * This allows tests to run without Android dependencies.
@@ -9,64 +7,49 @@ import org.fossify.messages.models.Conversation
 class MockPreferencesProvider : PreferencesProvider {
     private val storage = mutableMapOf<String, Any>()
     
-    override fun saveUseSIMIdAtNumber(number: String, SIMId: Int) {
-        storage["sim_$number"] = SIMId
+    override fun getBoolean(key: String, defaultValue: Boolean): Boolean =
+        storage[key] as? Boolean ?: defaultValue
+
+    override fun putBoolean(key: String, value: Boolean) {
+        storage[key] = value
     }
 
-    override fun getUseSIMIdAtNumber(number: String): Int =
-        storage["sim_$number"] as? Int ?: 0
+    override fun getInt(key: String, defaultValue: Int): Int =
+        storage[key] as? Int ?: defaultValue
 
-    override var showCharacterCounter: Boolean = false
-    override var useSimpleCharacters: Boolean = false
-    override var sendOnEnter: Boolean = false
-    override var enableDeliveryReports: Boolean = false
-    override var sendLongMessageMMS: Boolean = false
-    override var sendGroupMessageMMS: Boolean = false
-    override var lockScreenVisibilitySetting: Int = 0
-    override var mmsFileSizeLimit: Long = 0L
-    override var pinnedConversations: Set<String> = emptySet()
-    override var blockedKeywords: Set<String> = emptySet()
-    override var exportSms: Boolean = true
-    override var exportMms: Boolean = true
-    override var importSms: Boolean = true
-    override var importMms: Boolean = true
-    override var wasDbCleared: Boolean = false
-    override var keyboardHeight: Int = 0
-    override var useRecycleBin: Boolean = false
-    override var lastRecycleBinCheck: Long = 0L
-    override var isArchiveAvailable: Boolean = true
-    override var customNotifications: Set<String> = emptySet()
-    override var lastBlockedKeywordExportPath: String = ""
-
-    override fun addPinnedConversationByThreadId(threadId: Long) {
-        pinnedConversations = pinnedConversations.plus(threadId.toString())
+    override fun putInt(key: String, value: Int) {
+        storage[key] = value
     }
 
-    override fun addPinnedConversations(conversations: List<Conversation>) {
-        pinnedConversations = pinnedConversations.plus(conversations.map { it.threadId.toString() })
+    override fun getLong(key: String, defaultValue: Long): Long =
+        storage[key] as? Long ?: defaultValue
+
+    override fun putLong(key: String, value: Long) {
+        storage[key] = value
     }
 
-    override fun removePinnedConversationByThreadId(threadId: Long) {
-        pinnedConversations = pinnedConversations.minus(threadId.toString())
+    override fun getString(key: String, defaultValue: String): String =
+        storage[key] as? String ?: defaultValue
+
+    override fun putString(key: String, value: String) {
+        storage[key] = value
     }
 
-    override fun removePinnedConversations(conversations: List<Conversation>) {
-        pinnedConversations = pinnedConversations.minus(conversations.map { it.threadId.toString() })
+    @Suppress("UNCHECKED_CAST")
+    override fun getStringSet(key: String, defaultValue: Set<String>): Set<String> =
+        storage[key] as? Set<String> ?: defaultValue
+
+    override fun putStringSet(key: String, value: Set<String>) {
+        storage[key] = value
     }
 
-    override fun addBlockedKeyword(keyword: String) {
-        blockedKeywords = blockedKeywords.plus(keyword)
+    override fun addToStringSet(key: String, value: String) {
+        val current = getStringSet(key)
+        putStringSet(key, current.plus(value))
     }
 
-    override fun removeBlockedKeyword(keyword: String) {
-        blockedKeywords = blockedKeywords.minus(keyword)
-    }
-
-    override fun addCustomNotificationsByThreadId(threadId: Long) {
-        customNotifications = customNotifications.plus(threadId.toString())
-    }
-
-    override fun removeCustomNotificationsByThreadId(threadId: Long) {
-        customNotifications = customNotifications.minus(threadId.toString())
+    override fun removeFromStringSet(key: String, value: String) {
+        val current = getStringSet(key)
+        putStringSet(key, current.minus(value))
     }
 }

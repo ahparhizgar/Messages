@@ -1,169 +1,60 @@
 package org.fossify.messages.providers
 
 import android.content.Context
-import org.fossify.messages.helpers.Config
-import org.fossify.messages.models.Conversation
+import android.content.SharedPreferences
 
 /**
- * Implementation of PreferencesProvider that delegates to the existing Config class.
+ * Implementation of PreferencesProvider that directly accesses SharedPreferences.
  * This maintains backward compatibility while providing a testable interface.
  */
 class PreferencesProviderImpl(context: Context) : PreferencesProvider {
-    private val config = Config.newInstance(context)
+    private val prefs: SharedPreferences = context.getSharedPreferences(
+        "${context.packageName}_preferences", 
+        Context.MODE_PRIVATE
+    )
 
-    override fun saveUseSIMIdAtNumber(number: String, SIMId: Int) =
-        config.saveUseSIMIdAtNumber(number, SIMId)
+    override fun getBoolean(key: String, defaultValue: Boolean): Boolean =
+        prefs.getBoolean(key, defaultValue)
 
-    override fun getUseSIMIdAtNumber(number: String): Int =
-        config.getUseSIMIdAtNumber(number)
+    override fun putBoolean(key: String, value: Boolean) {
+        prefs.edit().putBoolean(key, value).apply()
+    }
 
-    override var showCharacterCounter: Boolean
-        get() = config.showCharacterCounter
-        set(value) {
-            config.showCharacterCounter = value
-        }
+    override fun getInt(key: String, defaultValue: Int): Int =
+        prefs.getInt(key, defaultValue)
 
-    override var useSimpleCharacters: Boolean
-        get() = config.useSimpleCharacters
-        set(value) {
-            config.useSimpleCharacters = value
-        }
+    override fun putInt(key: String, value: Int) {
+        prefs.edit().putInt(key, value).apply()
+    }
 
-    override var sendOnEnter: Boolean
-        get() = config.sendOnEnter
-        set(value) {
-            config.sendOnEnter = value
-        }
+    override fun getLong(key: String, defaultValue: Long): Long =
+        prefs.getLong(key, defaultValue)
 
-    override var enableDeliveryReports: Boolean
-        get() = config.enableDeliveryReports
-        set(value) {
-            config.enableDeliveryReports = value
-        }
+    override fun putLong(key: String, value: Long) {
+        prefs.edit().putLong(key, value).apply()
+    }
 
-    override var sendLongMessageMMS: Boolean
-        get() = config.sendLongMessageMMS
-        set(value) {
-            config.sendLongMessageMMS = value
-        }
+    override fun getString(key: String, defaultValue: String): String =
+        prefs.getString(key, defaultValue) ?: defaultValue
 
-    override var sendGroupMessageMMS: Boolean
-        get() = config.sendGroupMessageMMS
-        set(value) {
-            config.sendGroupMessageMMS = value
-        }
+    override fun putString(key: String, value: String) {
+        prefs.edit().putString(key, value).apply()
+    }
 
-    override var lockScreenVisibilitySetting: Int
-        get() = config.lockScreenVisibilitySetting
-        set(value) {
-            config.lockScreenVisibilitySetting = value
-        }
+    override fun getStringSet(key: String, defaultValue: Set<String>): Set<String> =
+        prefs.getStringSet(key, defaultValue) ?: defaultValue
 
-    override var mmsFileSizeLimit: Long
-        get() = config.mmsFileSizeLimit
-        set(value) {
-            config.mmsFileSizeLimit = value
-        }
+    override fun putStringSet(key: String, value: Set<String>) {
+        prefs.edit().putStringSet(key, value).apply()
+    }
 
-    override var pinnedConversations: Set<String>
-        get() = config.pinnedConversations
-        set(value) {
-            config.pinnedConversations = value
-        }
+    override fun addToStringSet(key: String, value: String) {
+        val current = getStringSet(key)
+        putStringSet(key, current.plus(value))
+    }
 
-    override var blockedKeywords: Set<String>
-        get() = config.blockedKeywords
-        set(value) {
-            config.blockedKeywords = value
-        }
-
-    override var exportSms: Boolean
-        get() = config.exportSms
-        set(value) {
-            config.exportSms = value
-        }
-
-    override var exportMms: Boolean
-        get() = config.exportMms
-        set(value) {
-            config.exportMms = value
-        }
-
-    override var importSms: Boolean
-        get() = config.importSms
-        set(value) {
-            config.importSms = value
-        }
-
-    override var importMms: Boolean
-        get() = config.importMms
-        set(value) {
-            config.importMms = value
-        }
-
-    override var wasDbCleared: Boolean
-        get() = config.wasDbCleared
-        set(value) {
-            config.wasDbCleared = value
-        }
-
-    override var keyboardHeight: Int
-        get() = config.keyboardHeight
-        set(value) {
-            config.keyboardHeight = value
-        }
-
-    override var useRecycleBin: Boolean
-        get() = config.useRecycleBin
-        set(value) {
-            config.useRecycleBin = value
-        }
-
-    override var lastRecycleBinCheck: Long
-        get() = config.lastRecycleBinCheck
-        set(value) {
-            config.lastRecycleBinCheck = value
-        }
-
-    override var isArchiveAvailable: Boolean
-        get() = config.isArchiveAvailable
-        set(value) {
-            config.isArchiveAvailable = value
-        }
-
-    override var customNotifications: Set<String>
-        get() = config.customNotifications
-        set(value) {
-            config.customNotifications = value
-        }
-
-    override var lastBlockedKeywordExportPath: String
-        get() = config.lastBlockedKeywordExportPath
-        set(value) {
-            config.lastBlockedKeywordExportPath = value
-        }
-
-    override fun addPinnedConversationByThreadId(threadId: Long) =
-        config.addPinnedConversationByThreadId(threadId)
-
-    override fun addPinnedConversations(conversations: List<Conversation>) =
-        config.addPinnedConversations(conversations)
-
-    override fun removePinnedConversationByThreadId(threadId: Long) =
-        config.removePinnedConversationByThreadId(threadId)
-
-    override fun removePinnedConversations(conversations: List<Conversation>) =
-        config.removePinnedConversations(conversations)
-
-    override fun addBlockedKeyword(keyword: String) =
-        config.addBlockedKeyword(keyword)
-
-    override fun removeBlockedKeyword(keyword: String) =
-        config.removeBlockedKeyword(keyword)
-
-    override fun addCustomNotificationsByThreadId(threadId: Long) =
-        config.addCustomNotificationsByThreadId(threadId)
-
-    override fun removeCustomNotificationsByThreadId(threadId: Long) =
-        config.removeCustomNotificationsByThreadId(threadId)
+    override fun removeFromStringSet(key: String, value: String) {
+        val current = getStringSet(key)
+        putStringSet(key, current.minus(value))
+    }
 }

@@ -1,17 +1,11 @@
 package org.fossify.messages.providers
 
-import org.fossify.messages.interfaces.*
+import org.fossify.messages.databases.MessagesDatabase
 
 /**
- * Interface for providing access to database DAOs.
- * This abstraction enables easy mocking in tests and decouples from Room implementation.
+ * Interface for providing access to the Messages database.
+ * This abstraction enables easy testing by allowing replacement with in-memory database.
  */
 interface DatabaseProvider {
-    fun conversationsDao(): ConversationsDao
-    fun attachmentsDao(): AttachmentsDao
-    fun messageAttachmentsDao(): MessageAttachmentsDao
-    fun messagesDao(): MessagesDao
-    fun draftsDao(): DraftsDao
-    fun notificationRuleDao(): NotificationRuleDao
-    fun notificationCategoryDao(): NotificationCategoryDao
+    fun getDatabase(): MessagesDatabase
 }

@@ -30,13 +30,24 @@ class SettingsActivity : SimpleActivity() {
 ```kotlin
 // Interfaces for testability
 interface PreferencesProvider {
-    var showCharacterCounter: Boolean
-    // ... other properties
+    fun getBoolean(key: String, defaultValue: Boolean): Boolean
+    fun putBoolean(key: String, value: Boolean)
+    // ... other methods for different types
+}
+
+interface DatabaseProvider {
+    fun getDatabase(): MessagesDatabase
 }
 
 // Koin modules provide implementations
 val appModule = module {
     single<PreferencesProvider> { PreferencesProviderImpl(androidContext()) }
+    single<DatabaseProvider> { DatabaseProviderImpl(androidContext()) }
+}
+
+val dataModule = module {
+    single<MessagesDatabase> { get<DatabaseProvider>().getDatabase() }
+    single<MessagesDao> { get<MessagesDatabase>().MessagesDao() }
 }
 
 // Usage with Koin
@@ -45,7 +56,7 @@ class MyViewModel(
     private val messagesDao: MessagesDao
 ) : ViewModel() {
     fun doSomething() {
-        val setting = prefs.showCharacterCounter
+        val setting = prefs.getBoolean("show_character_counter", false)
     }
 }
 ```
@@ -55,15 +66,26 @@ class MyViewModel(
 ### 1. Interfaces
 
 #### PreferencesProvider
-Abstracts SharedPreferences access for application settings:
+Abstracts SharedPreferences access using a key-value approach:
 - Location: `app/src/main/kotlin/org/fossify/messages/providers/PreferencesProvider.kt`
-- Implementation: `PreferencesProviderImpl.kt` (wraps existing `Config` class)
+- Implementation: `PreferencesProviderImpl.kt` (directly accesses SharedPreferences)
 - Test Mock: `app/src/test/kotlin/org/fossify/messages/providers/MockPreferencesProvider.kt`
 
+**Methods:**
+- `getBoolean(key, defaultValue)` / `putBoolean(key, value)`
+- `getInt(key, defaultValue)` / `putInt(key, value)`
+- `getLong(key, defaultValue)` / `putLong(key, value)`
+- `getString(key, defaultValue)` / `putString(key, value)`
+- `getStringSet(key, defaultValue)` / `putStringSet(key, value)`
+- `addToStringSet(key, value)` / `removeFromStringSet(key, value)`
+
 #### DatabaseProvider
-Provides access to Room database DAOs:
+Provides access to the Room database (not individual DAOs):
 - Location: `app/src/main/kotlin/org/fossify/messages/providers/DatabaseProvider.kt`
 - Implementation: `DatabaseProviderImpl.kt` (wraps existing `MessagesDatabase`)
+- Method: `getDatabase(): MessagesDatabase`
+
+**Benefit:** Can be easily replaced with an in-memory database for testing.
 
 ### 2. Koin Modules
 
@@ -73,13 +95,9 @@ Provides application-level dependencies:
 - `DatabaseProvider`
 
 #### Data Module (`di/DataModule.kt`)
-Provides database DAOs:
-- `ConversationsDao`
-- `MessagesDao`
-- `AttachmentsDao`
-- `NotificationRuleDao`
-- `NotificationCategoryDao`
-- etc.
+Provides database and DAOs:
+- `MessagesDatabase` (from DatabaseProvider)
+- Individual DAOs: `ConversationsDao`, `MessagesDao`, `AttachmentsDao`, etc.
 
 #### ViewModel Module (`di/ViewModelModule.kt`)
 Provides ViewModels with automatic dependency injection:

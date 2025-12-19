@@ -5,39 +5,26 @@ import org.fossify.messages.models.Conversation
 /**
  * Interface for managing application preferences.
  * This abstraction allows for easy mocking in tests and decouples from Android SharedPreferences.
+ * Uses key-value approach to avoid a large interface with many properties.
  */
 interface PreferencesProvider {
-    fun saveUseSIMIdAtNumber(number: String, SIMId: Int)
-    fun getUseSIMIdAtNumber(number: String): Int
-
-    var showCharacterCounter: Boolean
-    var useSimpleCharacters: Boolean
-    var sendOnEnter: Boolean
-    var enableDeliveryReports: Boolean
-    var sendLongMessageMMS: Boolean
-    var sendGroupMessageMMS: Boolean
-    var lockScreenVisibilitySetting: Int
-    var mmsFileSizeLimit: Long
-    var pinnedConversations: Set<String>
-    var blockedKeywords: Set<String>
-    var exportSms: Boolean
-    var exportMms: Boolean
-    var importSms: Boolean
-    var importMms: Boolean
-    var wasDbCleared: Boolean
-    var keyboardHeight: Int
-    var useRecycleBin: Boolean
-    var lastRecycleBinCheck: Long
-    var isArchiveAvailable: Boolean
-    var customNotifications: Set<String>
-    var lastBlockedKeywordExportPath: String
-
-    fun addPinnedConversationByThreadId(threadId: Long)
-    fun addPinnedConversations(conversations: List<Conversation>)
-    fun removePinnedConversationByThreadId(threadId: Long)
-    fun removePinnedConversations(conversations: List<Conversation>)
-    fun addBlockedKeyword(keyword: String)
-    fun removeBlockedKeyword(keyword: String)
-    fun addCustomNotificationsByThreadId(threadId: Long)
-    fun removeCustomNotificationsByThreadId(threadId: Long)
+    // Generic preference access methods
+    fun getBoolean(key: String, defaultValue: Boolean = false): Boolean
+    fun putBoolean(key: String, value: Boolean)
+    
+    fun getInt(key: String, defaultValue: Int = 0): Int
+    fun putInt(key: String, value: Int)
+    
+    fun getLong(key: String, defaultValue: Long = 0L): Long
+    fun putLong(key: String, value: Long)
+    
+    fun getString(key: String, defaultValue: String = ""): String
+    fun putString(key: String, value: String)
+    
+    fun getStringSet(key: String, defaultValue: Set<String> = emptySet()): Set<String>
+    fun putStringSet(key: String, value: Set<String>)
+    
+    // Convenience methods for specific features
+    fun addToStringSet(key: String, value: String)
+    fun removeFromStringSet(key: String, value: String)
 }

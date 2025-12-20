@@ -70,6 +70,16 @@ class NotificationRulesViewModel(
         }
     }
 
+    fun updateRuleOrders(reorderedRules: List<NotificationRule>) {
+        viewModelScope.launch {
+            // Update the order field for each rule based on its new position
+            val updatedRules = reorderedRules.mapIndexed { index, rule ->
+                rule.copy(order = index)
+            }
+            notificationRuleDao.updateAll(updatedRules)
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.O) // NotificationChannel requires API 26
     fun addNotificationCategory(channelName: String, channelDescription: String?, context: Context) {
         viewModelScope.launch {

@@ -18,9 +18,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
@@ -33,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -40,6 +44,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.fossify.messages.viewmodels.NotificationRulesViewModel
 import org.koin.androidx.compose.koinViewModel
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 class NotificationRulesActivity : ComponentActivity() {
 
@@ -178,13 +184,55 @@ fun RulesTabContent(viewModel: NotificationRulesViewModel) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text("Current Rules (Count: ${rules.size})")
-        rules.forEach { rule ->
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("ID: ${rule.id}, Type: ${rule.ruleType}, Value: ${rule.valueToMatch}, Category: ${rule.categoryId}, Order: ${rule.order}", modifier = Modifier.weight(1f))
-                Spacer(modifier = Modifier.width(8.dp))
-                Button(onClick = { viewModel.deleteNotificationRule(rule) }) {
-                    Text("Delete")
+        Text("Current Rules (Count: ${rules.size}) - Drag to reorder")
+        
+        // Create a mutable state list for reordering
+        val reorderableRules = remember(rules) { rules.toMutableStateList() }
+        var isDragInProgress by remember { mutableStateOf(false) }
+        
+        val lazyListState = androidx.compose.foundation.lazy.rememberLazyListState()
+        val reorderableLazyListState = rememberReorderableLazyListState(lazyListState) { from, to ->
+            reorderableRules.apply {
+                add(to.index, removeAt(from.index))
+            }
+            isDragInProgress = true
+        }
+        
+        LazyColumn(
+            state = lazyListState,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(reorderableRules.size, key = { reorderableRules[it].id }) { index ->
+                val rule = reorderableRules[index]
+                ReorderableItem(reorderableLazyListState, key = rule.id) { isDraggingItem ->
+                    // When an item stops being dragged, persist the new order
+                    if (!isDraggingItem && isDragInProgress) {
+                        isDragInProgress = false
+                        viewModel.updateRuleOrders(reorderableRules)
+                    }
+                    
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "Drag handle",
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .longPressDraggableHandle()
+                        )
+                        Text(
+                            "ID: ${rule.id}, Type: ${rule.ruleType}, Value: ${rule.valueToMatch}, Category: ${rule.categoryId}, Position: $index",
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(onClick = { viewModel.deleteNotificationRule(rule) }) {
+                            Text("Delete")
+                        }
+                    }
                 }
             }
         }
